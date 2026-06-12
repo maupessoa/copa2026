@@ -132,25 +132,25 @@ button{font-family:inherit}
 /* ── ARTILHARIA VIEW ── */
 .art-view{padding:10px}
 .art-table{background:var(--s1);border:1px solid var(--bd);border-radius:11px;overflow:hidden;margin-bottom:10px}
-.art-head,.art-row{display:grid;grid-template-columns:24px 1fr 60px 30px;padding:8px 10px;font-size:11px;gap:4px;align-items:center}
+.art-head,.art-row{display:grid;grid-template-columns:28px 1fr 36px;padding:8px 12px;font-size:11px;gap:4px;align-items:center}
 .art-head{color:var(--t3);border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.4px}
 .art-row{border-bottom:1px solid #0d0d18}
 .art-row:last-child{border-bottom:none}
-.art-pos{color:var(--t3);text-align:center;font-size:10px}
-.art-nome{color:var(--t1);font-size:11px}
-.art-sel{color:var(--t3);font-size:9px;margin-top:1px}
-.art-gols{text-align:center;font-weight:800;font-size:14px}
+.art-pos{color:var(--t3);text-align:center;font-size:11px}
+.art-nome{color:var(--t1);font-size:12px;font-weight:500}
+.art-sel{color:var(--t3);font-size:10px;margin-top:2px}
+.art-gols{text-align:center;font-weight:800;font-size:18px;line-height:1}
 .art-empty{padding:20px;text-align:center;color:var(--t3);font-size:11px}
 
 /* ── GOLS ALINHADOS ── */
-.gols-grid{padding:0 8px 8px;display:flex;flex-direction:column;gap:2px}
+.gols-grid{padding:0 8px 8px;display:flex;flex-direction:column;gap:3px}
 .gol-esq,.gol-dir{display:flex;align-items:center;gap:4px;font-size:10px}
 .gol-esq{justify-content:flex-start;padding-left:4px}
 .gol-dir{justify-content:flex-end;padding-right:4px}
 .gol-esq .gmin{color:var(--t3);font-size:9px;min-width:20px}
-.gol-dir .gmin{color:var(--t3);font-size:9px;min-width:20px;text-align:right}
-.gol-esq .gnome{color:#c8e6c9}
-.gol-dir .gnome{color:#bbdefb}
+.gol-dir .gmin{color:#8a7200;font-size:9px;min-width:20px;text-align:right}
+.gol-esq .gnome{color:#ffffff;font-weight:500}
+.gol-dir .gnome{color:#ffd600;font-weight:500}
 
 /* ── MATA-MATA ── */
 .mm-view{padding:10px}
@@ -243,7 +243,7 @@ button{font-family:inherit}
   <div class="art-view">
     <div class="sec-title" style="margin-bottom:8px">Artilheiros da Copa</div>
     <div class="art-table">
-      <div class="art-head"><span>#</span><span>Jogador</span><span style="text-align:left">Seleção</span><span>⚽</span></div>
+      <div class="art-head"><span>#</span><span>Jogador</span><span>⚽</span></div>
       <div id="artbody"><div class="art-empty">Pressione ATUALIZAR para buscar artilheiros</div></div>
     </div>
   </div>
@@ -861,16 +861,37 @@ function renderCal(){
     ...dias.map(d=>{const j=todos.find(x=>x.dt===d);return{id:d,label:`${d.split("/")[0]} ${diasNomes[j.dw]||j.dw}`};})
   ];
   const filtrosHora=[
-    {id:"todas",label:"Todos horários"},
+    {id:"todas",label:"Todos"},
     ...horas.map(h=>({id:h,label:h}))
   ];
 
+  // Separar dias por mês para organizar melhor
+  const diasJun=dias.filter(d=>d.endsWith("/06"));
+  const diasJul=dias.filter(d=>d.endsWith("/07"));
+
+  function btnDia(f){
+    const on=S.calFiltro===f.id;
+    return`<button class="cf${on?" on":""}" style="padding:4px 7px;font-size:10px" onclick="setCalFiltro('${f.id}')">${f.label}</button>`;
+  }
+
   document.getElementById("calfilters").innerHTML=`
-    <div style="display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px">
-      ${filtrosDia.map(f=>`<button class="cf${S.calFiltro===f.id?" on":""}" style="white-space:nowrap" onclick="setCalFiltro('${f.id}')">${f.label}</button>`).join("")}
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+      ${btnDia({id:"todos",label:"Todos"})}
+      ${btnDia({id:"favs",label:"⭐"})}
     </div>
-    <div style="display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px">
-      ${filtrosHora.map(f=>`<button class="cf${S.calFiltroHora===f.id?" on":""}" style="white-space:nowrap;font-size:10px" onclick="setCalFiltroHora('${f.id}')">${f.label}</button>`).join("")}
+    ${diasJun.length?`
+    <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px">Junho</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+      ${diasJun.map(d=>{const j=todos.find(x=>x.dt===d);const dia=d.split("/")[0];const dw=diasNomes[j?.dw]||"";return btnDia({id:d,label:`${dia} ${dw}`});}).join("")}
+    </div>`:""}
+    ${diasJul.length?`
+    <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px">Julho</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+      ${diasJul.map(d=>{const j=todos.find(x=>x.dt===d);const dia=d.split("/")[0];const dw=diasNomes[j?.dw]||"";return btnDia({id:d,label:`${dia} ${dw}`});}).join("")}
+    </div>`:""}
+    <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px">Horário</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">
+      ${filtrosHora.map(f=>{const on=S.calFiltroHora===f.id;return`<button class="cf${on?" on":""}" style="padding:4px 7px;font-size:10px" onclick="setCalFiltroHora('${f.id}')">${f.label}</button>`;}).join("")}
     </div>`;
 
   // Aplicar filtros
@@ -1024,7 +1045,6 @@ function renderArtilharia(){
         <div class="art-nome">${a.nome}</div>
         <div class="art-sel">${comBandeira(nomeLimpo(a.selecao))}</div>
       </div>
-      <span></span>
       <span class="art-gols" style="color:${cor}">${a.gols}</span>
     </div>`;
   }).join("");
