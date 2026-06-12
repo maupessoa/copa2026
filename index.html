@@ -129,6 +129,29 @@ button{font-family:inherit}
 .cal-meta{font-size:9px;color:var(--t3);margin-top:2px}
 .cal-grp{font-size:10px;font-weight:700;color:var(--t3);flex-shrink:0;width:22px;text-align:center}
 
+/* ── ARTILHARIA VIEW ── */
+.art-view{padding:10px}
+.art-table{background:var(--s1);border:1px solid var(--bd);border-radius:11px;overflow:hidden;margin-bottom:10px}
+.art-head,.art-row{display:grid;grid-template-columns:24px 1fr 60px 30px;padding:8px 10px;font-size:11px;gap:4px;align-items:center}
+.art-head{color:var(--t3);border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.4px}
+.art-row{border-bottom:1px solid #0d0d18}
+.art-row:last-child{border-bottom:none}
+.art-pos{color:var(--t3);text-align:center;font-size:10px}
+.art-nome{color:var(--t1);font-size:11px}
+.art-sel{color:var(--t3);font-size:9px;margin-top:1px}
+.art-gols{text-align:center;font-weight:800;font-size:14px}
+.art-empty{padding:20px;text-align:center;color:var(--t3);font-size:11px}
+
+/* ── GOLS ALINHADOS ── */
+.gols-grid{padding:0 8px 8px;display:flex;flex-direction:column;gap:2px}
+.gol-esq,.gol-dir{display:flex;align-items:center;gap:4px;font-size:10px}
+.gol-esq{justify-content:flex-start;padding-left:4px}
+.gol-dir{justify-content:flex-end;padding-right:4px}
+.gol-esq .gmin{color:var(--t3);font-size:9px;min-width:20px}
+.gol-dir .gmin{color:var(--t3);font-size:9px;min-width:20px;text-align:right}
+.gol-esq .gnome{color:#c8e6c9}
+.gol-dir .gnome{color:#bbdefb}
+
 /* ── MATA-MATA ── */
 .mm-view{padding:10px}
 .fase-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin:12px 0 7px;padding-left:2px}
@@ -215,6 +238,17 @@ button{font-family:inherit}
   <div class="mm-view" id="mmcont"></div>
 </div>
 
+<!-- ARTILHARIA -->
+<div class="view" id="vart">
+  <div class="art-view">
+    <div class="sec-title" style="margin-bottom:8px">Artilheiros da Copa</div>
+    <div class="art-table">
+      <div class="art-head"><span>#</span><span>Jogador</span><span style="text-align:left">Seleção</span><span>⚽</span></div>
+      <div id="artbody"><div class="art-empty">Pressione ATUALIZAR para buscar artilheiros</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- TERCEIROS -->
 <div class="view" id="vterc">
   <div class="terc-view">
@@ -237,7 +271,7 @@ button{font-family:inherit}
   </div>
 </div>
 
-<nav class="nav">
+<nav class="nav" style="grid-template-columns:repeat(6,1fr)">
   <button class="nb on" onclick="sv('grupos',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Grupos
@@ -249,6 +283,10 @@ button{font-family:inherit}
   <button class="nb" onclick="sv('mm',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
     Mata-mata
+  </button>
+  <button class="nb" onclick="sv('art',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    Gols
   </button>
   <button class="nb" onclick="sv('terc',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -366,59 +404,236 @@ const G = {
 // Cores por grupo
 const COR = {A:"#26d07c",B:"#c0392b",C:"#009c3b",D:"#1a6bbd",E:"#e0e0e0",F:"#e07820",G:"#d4a820",H:"#d4000a",I:"#002395",J:"#74acdf",K:"#006600",L:"#cf1020"};
 
-// Mata-mata — estrutura fixa Copa 2026 (32 → 16 → 8 → 4 → 2 → 1)
-const MM_FASES = [
-  {fase:"Rodada de 32",jogos:[
-    {id:"R32-1",label:"Jogo 1",info:"1ºA × 3º(B/C/D/E)"},
-    {id:"R32-2",label:"Jogo 2",info:"1ºC × 3º(A/B/F)"},
-    {id:"R32-3",label:"Jogo 3",info:"1ºB × 3º(A/C/D)"},
-    {id:"R32-4",label:"Jogo 4",info:"1ºF × 3º(G/H/I)"},
-    {id:"R32-5",label:"Jogo 5",info:"1ºD × 3º(E/F/G/H)"},
-    {id:"R32-6",label:"Jogo 6",info:"1ºE × 3º(J/K/L)"},
-    {id:"R32-7",label:"Jogo 7",info:"1ºG × 2ºH"},
-    {id:"R32-8",label:"Jogo 8",info:"1ºH × 2ºG"},
-    {id:"R32-9",label:"Jogo 9",info:"1ºI × 2ºJ"},
-    {id:"R32-10",label:"Jogo 10",info:"1ºJ × 2ºI"},
-    {id:"R32-11",label:"Jogo 11",info:"1ºK × 2ºL"},
-    {id:"R32-12",label:"Jogo 12",info:"1ºL × 2ºK"},
-    {id:"R32-13",label:"Jogo 13",info:"2ºA × 2ºB"},
-    {id:"R32-14",label:"Jogo 14",info:"2ºC × 2ºD"},
-    {id:"R32-15",label:"Jogo 15",info:"2ºE × 2ºF"},
-    {id:"R32-16",label:"Jogo 16",info:"2ºA × 2ºB"},
-  ]},
-  {fase:"Oitavas de Final",jogos:[
-    {id:"OF-1",label:"Jogo 17",info:"Venc. J1 × Venc. J2"},
-    {id:"OF-2",label:"Jogo 18",info:"Venc. J3 × Venc. J4"},
-    {id:"OF-3",label:"Jogo 19",info:"Venc. J5 × Venc. J6"},
-    {id:"OF-4",label:"Jogo 20",info:"Venc. J7 × Venc. J8"},
-    {id:"OF-5",label:"Jogo 21",info:"Venc. J9 × Venc. J10"},
-    {id:"OF-6",label:"Jogo 22",info:"Venc. J11 × Venc. J12"},
-    {id:"OF-7",label:"Jogo 23",info:"Venc. J13 × Venc. J14"},
-    {id:"OF-8",label:"Jogo 24",info:"Venc. J15 × Venc. J16"},
-  ]},
-  {fase:"Quartas de Final",jogos:[
-    {id:"QF-1",label:"Jogo 25",info:"Venc. J17 × Venc. J18"},
-    {id:"QF-2",label:"Jogo 26",info:"Venc. J19 × Venc. J20"},
-    {id:"QF-3",label:"Jogo 27",info:"Venc. J21 × Venc. J22"},
-    {id:"QF-4",label:"Jogo 28",info:"Venc. J23 × Venc. J24"},
-  ]},
-  {fase:"Semifinais",jogos:[
-    {id:"SF-1",label:"Semifinal 1",info:"Venc. J25 × Venc. J26"},
-    {id:"SF-2",label:"Semifinal 2",info:"Venc. J27 × Venc. J28"},
-  ]},
-  {fase:"3º Lugar — 19 de julho · MetLife Stadium",jogos:[
-    {id:"3L",label:"Disputa 3º Lugar",info:"Perd. SF1 × Perd. SF2"},
-  ]},
-  {fase:"Final — 19 de julho · MetLife Stadium, Nova York/NJ",jogos:[
-    {id:"FIN",label:"FINAL",info:"Venc. SF1 × Venc. SF2"},
-  ]},
+// ═══════════════════════════════════════════════════════
+// CHAVEAMENTO OFICIAL RODADA DE 32 — FIFA Copa 2026
+// Fonte: ESPN / USA Today / FIFA regulations
+// ═══════════════════════════════════════════════════════
+
+// Confrontos fixos da Rodada de 32 (M73-M88)
+// t1Source / t2Source: {tipo:"1"|"2"|"3", grupo:"X", grupos:["A","B"...]}
+const R32 = [
+  {id:"M73",num:73,dt:"29/06",dw:"Dom",h:"14h00",sede:"Boston",        t1:{tipo:"1",grupo:"E"},  t2:{tipo:"3",grupos:["A","B","C","D","F"]}},
+  {id:"M74",num:74,dt:"29/06",dw:"Dom",h:"18h00",sede:"Houston",       t1:{tipo:"1",grupo:"C"},  t2:{tipo:"2",grupo:"F"}},
+  {id:"M75",num:75,dt:"29/06",dw:"Dom",h:"22h00",sede:"Guadalajara",   t1:{tipo:"1",grupo:"F"},  t2:{tipo:"2",grupo:"C"}},
+  {id:"M76",num:76,dt:"30/06",dw:"Seg",h:"14h00",sede:"Dallas",        t1:{tipo:"2",grupo:"E"},  t2:{tipo:"2",grupo:"I"}},
+  {id:"M77",num:77,dt:"30/06",dw:"Seg",h:"18h00",sede:"Nova York/NJ",  t1:{tipo:"1",grupo:"I"},  t2:{tipo:"3",grupos:["C","D","F","G","H"]}},
+  {id:"M78",num:78,dt:"30/06",dw:"Seg",h:"22h00",sede:"Cidade do México",t1:{tipo:"1",grupo:"A"},t2:{tipo:"3",grupos:["C","E","F","H","I"]}},
+  {id:"M79",num:79,dt:"01/07",dw:"Ter",h:"13h00",sede:"Atlanta",       t1:{tipo:"1",grupo:"L"},  t2:{tipo:"3",grupos:["E","H","I","J","K"]}},
+  {id:"M80",num:80,dt:"01/07",dw:"Ter",h:"17h00",sede:"Seattle",       t1:{tipo:"1",grupo:"G"},  t2:{tipo:"3",grupos:["A","E","H","I","J"]}},
+  {id:"M81",num:81,dt:"01/07",dw:"Ter",h:"21h00",sede:"Santa Clara",   t1:{tipo:"1",grupo:"D"},  t2:{tipo:"3",grupos:["B","E","F","I","J"]}},
+  {id:"M82",num:82,dt:"02/07",dw:"Qua",h:"14h00",sede:"Los Angeles",   t1:{tipo:"1",grupo:"H"},  t2:{tipo:"2",grupo:"J"}},
+  {id:"M83",num:83,dt:"02/07",dw:"Qua",h:"18h00",sede:"Kansas City",   t1:{tipo:"1",grupo:"K"},  t2:{tipo:"3",grupos:["D","E","I","J","L"]}},
+  {id:"M84",num:84,dt:"02/07",dw:"Qua",h:"22h00",sede:"Miami",         t1:{tipo:"1",grupo:"J"},  t2:{tipo:"2",grupo:"H"}},
+  {id:"M85",num:85,dt:"03/07",dw:"Qui",h:"14h00",sede:"Vancouver",     t1:{tipo:"1",grupo:"B"},  t2:{tipo:"3",grupos:["E","F","G","I","J"]}},
+  {id:"M86",num:86,dt:"03/07",dw:"Qui",h:"18h00",sede:"Toronto",       t1:{tipo:"2",grupo:"K"},  t2:{tipo:"2",grupo:"L"}},
+  {id:"M87",num:87,dt:"04/07",dw:"Sex",h:"14h00",sede:"Filadélfia",    t1:{tipo:"2",grupo:"A"},  t2:{tipo:"2",grupo:"B"}},
+  {id:"M88",num:88,dt:"04/07",dw:"Sex",h:"18h00",sede:"Guadalajara",   t1:{tipo:"2",grupo:"C"},  t2:{tipo:"2",grupo:"D"}},
 ];
 
+// Oitavas de Final (M89-M96) — vencedores de R32 em ordem
+const OF = [
+  {id:"M89",num:89,dt:"05/07",dw:"Sáb",h:"14h00",sede:"Seattle",      f1:"M73",f2:"M74"},
+  {id:"M90",num:90,dt:"05/07",dw:"Sáb",h:"21h00",sede:"Cidade do México",f1:"M75",f2:"M76"},
+  {id:"M91",num:91,dt:"06/07",dw:"Dom",h:"14h00",sede:"Nova York/NJ",  f1:"M77",f2:"M78"},
+  {id:"M92",num:92,dt:"06/07",dw:"Dom",h:"21h00",sede:"Los Angeles",   f1:"M79",f2:"M80"},
+  {id:"M93",num:93,dt:"07/07",dw:"Seg",h:"14h00",sede:"Dallas",        f1:"M81",f2:"M82"},
+  {id:"M94",num:94,dt:"07/07",dw:"Seg",h:"21h00",sede:"Boston",        f1:"M83",f2:"M84"},
+  {id:"M95",num:95,dt:"08/07",dw:"Ter",h:"14h00",sede:"Atlanta",       f1:"M85",f2:"M86"},
+  {id:"M96",num:96,dt:"08/07",dw:"Ter",h:"21h00",sede:"Houston",       f1:"M87",f2:"M88"},
+];
+
+// Quartas (M97-M100)
+const QF = [
+  {id:"M97", num:97, dt:"11/07",dw:"Sex",h:"17h00",sede:"Kansas City",   f1:"M89",f2:"M90"},
+  {id:"M98", num:98, dt:"11/07",dw:"Sex",h:"21h00",sede:"San Francisco",  f1:"M91",f2:"M92"},
+  {id:"M99", num:99, dt:"12/07",dw:"Sáb",h:"17h00",sede:"Dallas",         f1:"M93",f2:"M94"},
+  {id:"M100",num:100,dt:"12/07",dw:"Sáb",h:"21h00",sede:"Los Angeles",    f1:"M95",f2:"M96"},
+];
+
+// Semis (M101-M102)
+const SF = [
+  {id:"M101",num:101,dt:"14/07",dw:"Ter",h:"21h00",sede:"Dallas (AT&T)",  f1:"M97",f2:"M98"},
+  {id:"M102",num:102,dt:"15/07",dw:"Qua",h:"21h00",sede:"Atlanta",        f1:"M99",f2:"M100"},
+];
+
+// 3º lugar + Final
+const FIM = [
+  {id:"M103",num:103,dt:"18/07",dw:"Sex",h:"21h00",sede:"Miami",          perd1:"M101",perd2:"M102"},
+  {id:"M104",num:104,dt:"19/07",dw:"Sáb",h:"21h00",sede:"Nova York/NJ 🏆",f1:"M101",f2:"M102"},
+];
+
+// ── Helpers para resolver times ──────────────────────────
+function get1o(g){return calcClass(g)[0]?.nome||"1º "+g;}
+function get2o(g){return calcClass(g)[1]?.nome||"2º "+g;}
+function get3o(g){
+  const t=calcClass(g)[2];
+  if(!t||t.j===0)return"3º "+g;
+  return t.nome;
+}
+
+function calcTerceirosClassificados(){
+  // Retorna os 8 melhores terceiros com seus grupos de origem
+  return calcTerceiros().slice(0,8);
+}
+
+function resolverTerceiro(grupos){
+  // Dos grupos candidatos, qual tem o melhor terceiro classificado?
+  const terc8=calcTerceirosClassificados();
+  for(const t of terc8){
+    if(grupos.includes(t.grupo))return t.nome;
+  }
+  // Nenhum ainda classificado — mostra candidatos
+  const grpFechados=grupos.filter(g=>G[g].j.every(j=>res(j.id)!==null));
+  if(grpFechados.length>0){
+    const melhor=grupos.map(g=>({g,t:calcClass(g)[2]}))
+      .filter(x=>x.t&&x.t.j>0)
+      .sort((a,b)=>b.t.pts-a.t.pts||b.t.sg-a.t.sg||b.t.gp-a.t.gp)[0];
+    if(melhor)return melhor.t.nome+`?`;
+  }
+  return`3º (${grupos.join("/")})`;
+}
+
+function grupoFechado(g){
+  return G[g].j.filter(j=>j.r===3).every(j=>res(j.id)!==null);
+}
+
+function resolverSlot(src){
+  if(src.tipo==="1") return grupoFechado(src.grupo)?get1o(src.grupo):`1º Gr.${src.grupo}`;
+  if(src.tipo==="2") return grupoFechado(src.grupo)?get2o(src.grupo):`2º Gr.${src.grupo}`;
+  if(src.tipo==="3") return resolverTerceiro(src.grupos);
+  return"—";
+}
+
+function getVencedor(mid){
+  const p=S.mmplacares[mid];
+  if(!p||p.t1===""||p.t2==="")return null;
+  const t1=parseInt(p.t1),t2=parseInt(p.t2);
+  if(isNaN(t1)||isNaN(t2))return null;
+  const mm=S.mmplacares[mid];
+  if(t1>t2)return mm.nome1||null;
+  if(t2>t1)return mm.nome2||null;
+  return null; // empate não define (pens)
+}
+
+function getPerdedor(mid){
+  const p=S.mmplacares[mid];
+  if(!p||p.t1===""||p.t2==="")return null;
+  const t1=parseInt(p.t1),t2=parseInt(p.t2);
+  if(isNaN(t1)||isNaN(t2))return null;
+  const mm=S.mmplacares[mid];
+  if(t1>t2)return mm.nome2||null;
+  if(t2>t1)return mm.nome1||null;
+  return null;
+}
+
+// ── renderMM com preenchimento automático ────────────────
+function renderMM(){
+  // Sincronizar nomes automáticos nos mmplacares (R32)
+  R32.forEach(j=>{
+    if(!S.mmplacares[j.id])S.mmplacares[j.id]={};
+    const p=S.mmplacares[j.id];
+    if(!p._manual1)p.nome1=resolverSlot(j.t1);
+    if(!p._manual2)p.nome2=resolverSlot(j.t2);
+  });
+
+  // Sincronizar OF a partir dos vencedores de R32
+  OF.forEach(j=>{
+    if(!S.mmplacares[j.id])S.mmplacares[j.id]={};
+    const p=S.mmplacares[j.id];
+    if(!p._manual1)p.nome1=getVencedor(j.f1)||`Venc. M${R32.find(x=>x.id===j.f1)?.num||j.f1}`;
+    if(!p._manual2)p.nome2=getVencedor(j.f2)||`Venc. M${R32.find(x=>x.id===j.f2)?.num||j.f2}`;
+  });
+
+  // QF
+  QF.forEach(j=>{
+    if(!S.mmplacares[j.id])S.mmplacares[j.id]={};
+    const p=S.mmplacares[j.id];
+    if(!p._manual1)p.nome1=getVencedor(j.f1)||`Venc. M${OF.find(x=>x.id===j.f1)?.num||j.f1}`;
+    if(!p._manual2)p.nome2=getVencedor(j.f2)||`Venc. M${OF.find(x=>x.id===j.f2)?.num||j.f2}`;
+  });
+
+  // SF
+  SF.forEach(j=>{
+    if(!S.mmplacares[j.id])S.mmplacares[j.id]={};
+    const p=S.mmplacares[j.id];
+    if(!p._manual1)p.nome1=getVencedor(j.f1)||`Venc. M${QF.find(x=>x.id===j.f1)?.num||j.f1}`;
+    if(!p._manual2)p.nome2=getVencedor(j.f2)||`Venc. M${QF.find(x=>x.id===j.f2)?.num||j.f2}`;
+  });
+
+  // 3º lugar
+  const p3=S.mmplacares["M103"]||{};
+  if(!p3._manual1)p3.nome1=getPerdedor("M101")||"Perd. SF1";
+  if(!p3._manual2)p3.nome2=getPerdedor("M102")||"Perd. SF2";
+  S.mmplacares["M103"]=p3;
+
+  // Final
+  const pFin=S.mmplacares["M104"]||{};
+  if(!pFin._manual1)pFin.nome1=getVencedor("M101")||"Venc. SF1";
+  if(!pFin._manual2)pFin.nome2=getVencedor("M102")||"Venc. SF2";
+  S.mmplacares["M104"]=pFin;
+
+  function cardMM(jogo,cor,labelFase){
+    const p=S.mmplacares[jogo.id]||{};
+    const t1v=p.t1!==undefined?p.t1:"",t2v=p.t2!==undefined?p.t2:"";
+    const r=(p.t1!==undefined&&p.t2!==undefined&&p.t1!==""&&p.t2!=="")?
+      {t1:parseInt(p.t1),t2:parseInt(p.t2)}:null;
+    const v1=r&&r.t1>r.t2,v2=r&&r.t2>r.t1;
+    const isFin=jogo.id==="M104";
+    const c=isFin?"#f5c518":cor;
+    const sede=jogo.sede||"";
+    return`<div class="mm-card">
+      <div class="mm-header">
+        <span style="color:${c}">M${jogo.num}</span>
+        <span>${jogo.dt} · ${jogo.h} BRT</span>
+        <span style="color:var(--t3);font-size:9px">${sede}</span>
+      </div>
+      <div class="mm-body">
+        <div style="text-align:right">
+          <div class="mm-time${v1?" top1 mm-win":""}">${p.nome1||"—"}</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+          <input class="pin" type="number" min="0" max="99" value="${t1v}" placeholder="–"
+            style="${v1?`border-color:${c}`:""}" oninput="setMMPn('${jogo.id}','t1',this.value)" inputmode="numeric">
+          <span class="vsep">×</span>
+          <input class="pin" type="number" min="0" max="99" value="${t2v}" placeholder="–"
+            style="${v2?`border-color:${c}`:""}" oninput="setMMPn('${jogo.id}','t2',this.value)" inputmode="numeric">
+        </div>
+        <div style="text-align:left">
+          <div class="mm-time${v2?" top1 mm-win":""}">${p.nome2||"—"}</div>
+        </div>
+      </div>
+      ${isFin&&r?`<div class="rbadge" style="color:#f5c518">🏆 CAMPEÃO: ${v1?p.nome1:p.nome2}</div>`:""}
+    </div>`;
+  }
+
+  const html=`
+    <div class="fase-title">Rodada de 32 <span style="color:var(--t3);font-size:9px;font-weight:400">(M73–M88)</span></div>
+    ${R32.map(j=>cardMM(j,"var(--blue)")).join("")}
+    <div class="fase-title">Oitavas de Final <span style="color:var(--t3);font-size:9px;font-weight:400">(M89–M96)</span></div>
+    ${OF.map(j=>cardMM(j,"var(--green)")).join("")}
+    <div class="fase-title">Quartas de Final <span style="color:var(--t3);font-size:9px;font-weight:400">(M97–M100)</span></div>
+    ${QF.map(j=>cardMM(j,"var(--yellow)")).join("")}
+    <div class="fase-title">Semifinais <span style="color:var(--t3);font-size:9px;font-weight:400">(M101–M102)</span></div>
+    ${SF.map(j=>cardMM(j,"var(--red)")).join("")}
+    <div class="fase-title">3º Lugar &amp; Final</div>
+    ${cardMM(FIM[0],"#888")}
+    ${cardMM(FIM[1],"#f5c518")}
+  `;
+  document.getElementById("mmcont").innerHTML=html;
+}
+
+function setMMPn(id,time,val){
+  const n=parseInt(val);
+  if(!S.mmplacares[id])S.mmplacares[id]={};
+  S.mmplacares[id][time]=isNaN(n)?"":Math.max(0,Math.min(30,n));
+  S.mmplacares[id]["_manual"+( time==="t1"?"1":"2")]=true;
+  save();renderMM();
+}
 // ═══════════════════════════════════════════════════════
 // ESTADO
 // ═══════════════════════════════════════════════════════
 const SK = "copa2026v4";
-let S = {grupo:"C",rodada:0,placares:{},gols:{},artilharia:[],favoritos:[],upd:null,calFiltro:"todos",mmplacares:{}};
+let S = {grupo:"C",rodada:0,placares:{},gols:{},artilharia:[],favoritos:[],upd:null,calFiltro:"todos",calFiltroHora:"todas",mmplacares:{}};
 
 function save(){try{localStorage.setItem(SK,JSON.stringify(S))}catch(e){}}
 function load(){try{const d=localStorage.getItem(SK);if(d)Object.assign(S,JSON.parse(d))}catch(e){}}
@@ -523,9 +738,19 @@ function renderJogos(){
       else if(r.t2>r.t1){v2=true;badge=`Vitória — ${nf(j.t2)}`}
       else badge="Empate";
     }
+    // Gols alinhados por time
     const gl=S.gols[j.id]||[];
-    const glHtml=gl.length?`<div class="gols-list">${gl.map(g=>`<div class="gol-row"><span class="gol-min">${g.min||""}′</span>⚽ ${g.jogador} <span style="color:var(--t3)">(${nf(g.time)})</span></div>`).join("")}</div>`:"";
-    return`<div class="jcard${fav?" fav":""}${r?"":" "}">
+    let glHtml="";
+    if(gl.length){
+      // Ordenar por minuto
+      const glSort=[...gl].sort((a,b)=>(parseInt(a.min)||0)-(parseInt(b.min)||0));
+      glHtml=`<div class="gols-grid">${glSort.map(g=>{
+        const esq=nomeLimpo(g.time)===nomeLimpo(j.t1);
+        return esq
+          ?`<div class="gol-esq"><span class="gmin">${g.min||"?"}′</span><span>⚽</span><span class="gnome">${g.jogador}</span></div>`
+          :`<div class="gol-dir"><span class="gnome">${g.jogador}</span><span>⚽</span><span class="gmin">${g.min||"?"}′</span></div>`;
+      }).join("")}</div>`;
+    }    return`<div class="jcard${fav?" fav":""}${r?"":" "}">
       <div class="favline"></div>
       <div class="jmeta">
         <span>${j.dw} <strong>${j.dt}</strong>${fav?" ★":""}</span>
@@ -570,55 +795,126 @@ function renderClass(){
 // RENDER CALENDÁRIO
 // ═══════════════════════════════════════════════════════
 function renderCal(){
-  // Coletar todos os jogos
+  // Coletar todos os jogos fase de grupos + mata-mata
   const todos=[];
-  Object.keys(G).forEach(gid=>G[gid].j.forEach(j=>todos.push({...j,gid})));
-  // Ordenar por data e hora
-  const dtOrd=j=>{const[d,m]=j.dt.split("/").map(Number);const h=parseInt(j.h)||0;return m*100000+d*1000+h;};
+  Object.keys(G).forEach(gid=>G[gid].j.forEach(j=>todos.push({...j,gid,fase:"grupo"})));
+
+  // Jogos mata-mata com datas fixas
+  const MM_DATAS=[
+    // Rodada de 32: 29 jun – 2 jul
+    {id:"R32-1",dt:"29/06",dw:"Dom",h:"14h00",fase:"mm",label:"Rodada de 32 — Jogo 1"},
+    {id:"R32-2",dt:"29/06",dw:"Dom",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 2"},
+    {id:"R32-3",dt:"29/06",dw:"Dom",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 3"},
+    {id:"R32-4",dt:"30/06",dw:"Seg",h:"14h00",fase:"mm",label:"Rodada de 32 — Jogo 4"},
+    {id:"R32-5",dt:"30/06",dw:"Seg",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 5"},
+    {id:"R32-6",dt:"30/06",dw:"Seg",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 6"},
+    {id:"R32-7",dt:"01/07",dw:"Ter",h:"14h00",fase:"mm",label:"Rodada de 32 — Jogo 7"},
+    {id:"R32-8",dt:"01/07",dw:"Ter",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 8"},
+    {id:"R32-9",dt:"01/07",dw:"Ter",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 9"},
+    {id:"R32-10",dt:"02/07",dw:"Qua",h:"14h00",fase:"mm",label:"Rodada de 32 — Jogo 10"},
+    {id:"R32-11",dt:"02/07",dw:"Qua",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 11"},
+    {id:"R32-12",dt:"02/07",dw:"Qua",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 12"},
+    {id:"R32-13",dt:"03/07",dw:"Qui",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 13"},
+    {id:"R32-14",dt:"03/07",dw:"Qui",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 14"},
+    {id:"R32-15",dt:"04/07",dw:"Sex",h:"18h00",fase:"mm",label:"Rodada de 32 — Jogo 15"},
+    {id:"R32-16",dt:"04/07",dw:"Sex",h:"22h00",fase:"mm",label:"Rodada de 32 — Jogo 16"},
+    // Oitavas: 5–8 jul
+    {id:"OF-1",dt:"05/07",dw:"Sáb",h:"14h00",fase:"mm",label:"Oitavas — Jogo 1"},
+    {id:"OF-2",dt:"05/07",dw:"Sáb",h:"22h00",fase:"mm",label:"Oitavas — Jogo 2"},
+    {id:"OF-3",dt:"06/07",dw:"Dom",h:"14h00",fase:"mm",label:"Oitavas — Jogo 3"},
+    {id:"OF-4",dt:"06/07",dw:"Dom",h:"22h00",fase:"mm",label:"Oitavas — Jogo 4"},
+    {id:"OF-5",dt:"07/07",dw:"Seg",h:"14h00",fase:"mm",label:"Oitavas — Jogo 5"},
+    {id:"OF-6",dt:"07/07",dw:"Seg",h:"22h00",fase:"mm",label:"Oitavas — Jogo 6"},
+    {id:"OF-7",dt:"08/07",dw:"Ter",h:"14h00",fase:"mm",label:"Oitavas — Jogo 7"},
+    {id:"OF-8",dt:"08/07",dw:"Ter",h:"22h00",fase:"mm",label:"Oitavas — Jogo 8"},
+    // Quartas: 11–12 jul
+    {id:"QF-1",dt:"11/07",dw:"Sex",h:"17h00",fase:"mm",label:"Quartas — Jogo 1"},
+    {id:"QF-2",dt:"11/07",dw:"Sex",h:"21h00",fase:"mm",label:"Quartas — Jogo 2"},
+    {id:"QF-3",dt:"12/07",dw:"Sáb",h:"17h00",fase:"mm",label:"Quartas — Jogo 3"},
+    {id:"QF-4",dt:"12/07",dw:"Sáb",h:"21h00",fase:"mm",label:"Quartas — Jogo 4"},
+    // Semis: 15–16 jul
+    {id:"SF-1",dt:"15/07",dw:"Ter",h:"21h00",fase:"mm",label:"Semifinal 1"},
+    {id:"SF-2",dt:"16/07",dw:"Qua",h:"21h00",fase:"mm",label:"Semifinal 2"},
+    // 3º lugar + Final: 19 jul
+    {id:"3L",dt:"19/07",dw:"Sáb",h:"17h00",fase:"mm",label:"Disputa 3º Lugar"},
+    {id:"FIN",dt:"19/07",dw:"Sáb",h:"21h00",fase:"mm",label:"🏆 FINAL"},
+  ];
+  MM_DATAS.forEach(j=>todos.push(j));
+
+  const dtOrd=j=>{
+    const[d,m]=j.dt.split("/").map(Number);
+    const h=parseInt(j.h)||0;
+    return m*100000+d*1000+h;
+  };
   todos.sort((a,b)=>dtOrd(a)-dtOrd(b));
 
-  // Dias únicos
+  // Horas únicas
+  const horas=[...new Set(todos.map(j=>j.h))].sort();
+
+  // Filtros de dia
   const dias=[...new Set(todos.map(j=>j.dt))];
+  const diasNomes={"Qui":"Qui","Sex":"Sex","Sáb":"Sáb","Dom":"Dom","Seg":"Seg","Ter":"Ter","Qua":"Qua"};
 
-  // Filtros
-  const filtros=[{id:"todos",label:"Todos os dias"},...dias.map(d=>{
-    const j=todos.find(x=>x.dt===d);
-    return{id:d,label:`${d} ${j.dw}`};
-  }),{id:"favs",label:"⭐ Favoritos"}];
+  const filtrosDia=[
+    {id:"todos",label:"Todos"},
+    {id:"favs",label:"⭐ Favs"},
+    ...dias.map(d=>{const j=todos.find(x=>x.dt===d);return{id:d,label:`${d.split("/")[0]} ${diasNomes[j.dw]||j.dw}`};})
+  ];
+  const filtrosHora=[
+    {id:"todas",label:"Todos horários"},
+    ...horas.map(h=>({id:h,label:h}))
+  ];
 
-  document.getElementById("calfilters").innerHTML=filtros.map(f=>{
-    const on=S.calFiltro===f.id;
-    return`<button class="cf${on?" on":""}" onclick="setCalFiltro('${f.id}')">${f.label}</button>`;
-  }).join("");
+  document.getElementById("calfilters").innerHTML=`
+    <div style="display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px">
+      ${filtrosDia.map(f=>`<button class="cf${S.calFiltro===f.id?" on":""}" style="white-space:nowrap" onclick="setCalFiltro('${f.id}')">${f.label}</button>`).join("")}
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px">
+      ${filtrosHora.map(f=>`<button class="cf${S.calFiltroHora===f.id?" on":""}" style="white-space:nowrap;font-size:10px" onclick="setCalFiltroHora('${f.id}')">${f.label}</button>`).join("")}
+    </div>`;
 
-  // Filtrar jogos
+  // Aplicar filtros
   let jFilt=todos;
-  if(S.calFiltro!=="todos"&&S.calFiltro!=="favs") jFilt=todos.filter(j=>j.dt===S.calFiltro);
-  if(S.calFiltro==="favs") jFilt=todos.filter(j=>jogoFav(j));
+  if(S.calFiltro!=="todos"&&S.calFiltro!=="favs") jFilt=jFilt.filter(j=>j.dt===S.calFiltro);
+  if(S.calFiltro==="favs") jFilt=jFilt.filter(j=>j.gid&&jogoFav(j));
+  if(S.calFiltroHora!=="todas") jFilt=jFilt.filter(j=>j.h===S.calFiltroHora);
 
   // Agrupar por dia
   const porDia={};
-  jFilt.forEach(j=>{
-    if(!porDia[j.dt])porDia[j.dt]=[];
-    porDia[j.dt].push(j);
-  });
+  jFilt.forEach(j=>{if(!porDia[j.dt])porDia[j.dt]=[];porDia[j.dt].push(j);});
 
-  const diasNomes={"Qui":"Quinta","Sex":"Sexta","Sáb":"Sábado","Dom":"Domingo","Seg":"Segunda","Ter":"Terça","Qua":"Quarta"};
+  const meses=["","JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+  const diasCompletos={"Qui":"Quinta","Sex":"Sexta","Sáb":"Sábado","Dom":"Domingo","Seg":"Segunda","Ter":"Terça","Qua":"Quarta"};
 
   document.getElementById("caldias").innerHTML=Object.keys(porDia).map(dt=>{
     const js=porDia[dt];
     const dw=js[0].dw;
     const [dia,mes]=dt.split("/");
-    const mesNome=["","JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"][parseInt(mes)];
+    const mesNome=meses[parseInt(mes)];
+
     const jCards=js.map(j=>{
-      const r=res(j.id);
-      const fav=jogoFav(j);
-      const c=COR[j.gid];
+      const fav=j.gid&&jogoFav(j);
+      const c=j.gid?COR[j.gid]:"var(--yellow)";
+      const r=j.gid?res(j.id):null;
+      const mp=j.fase==="mm"?(S.mmplacares[j.id]||{}):null;
       let v1=false,v2=false,pStr="";
-      if(r){
-        v1=r.t1>r.t2;v2=r.t2>r.t1;
-        pStr=`${r.t1} – ${r.t2}`;
+      if(r){v1=r.t1>r.t2;v2=r.t2>r.t1;pStr=`${r.t1} – ${r.t2}`;}
+
+      if(j.fase==="mm"){
+        const mp2=S.mmplacares[j.id]||{};
+        const t1n=mp2.nome1||"—",t2n=mp2.nome2||"—";
+        const hasScore=mp2.t1!==undefined&&mp2.t2!==undefined&&mp2.t1!==""&&mp2.t2!=="";
+        return`<div class="cal-jogo" style="border-color:${j.id==="FIN"?"#f5c518":"var(--bd)"}">
+          <div class="cal-hora">${j.h}<small>BRT</small></div>
+          <div class="cal-sep"></div>
+          <div class="cal-confronto">
+            <div class="cal-times" style="color:${j.id==="FIN"?"#f5c518":"var(--t2)"}">${j.label}</div>
+            ${hasScore?`<div class="cal-placar" style="color:${j.id==="FIN"?"#f5c518":"var(--blue)"}">${t1n} ${mp2.t1}–${mp2.t2} ${t2n}</div>`:`<div class="cal-meta">${t1n} × ${t2n}</div>`}
+          </div>
+          <div class="cal-grp" style="color:${j.id==="FIN"?"#f5c518":"var(--t3)"}">MM</div>
+        </div>`;
       }
+
       return`<div class="cal-jogo${fav?" fav":""}${r?" played":""}">
         <div class="cal-hora">${j.h}<small>BRT</small></div>
         <div class="cal-sep"></div>
@@ -634,59 +930,23 @@ function renderCal(){
         <div class="cal-grp" style="color:${c}">${j.gid}</div>
       </div>`;
     }).join("");
+
     return`<div class="dia-bloco">
       <div class="dia-header">
         <div class="dia-num">${dia}</div>
         <div class="dia-info">
-          <div class="dia-nome">${diasNomes[dw]||dw}</div>
+          <div class="dia-nome">${diasCompletos[dw]||dw}</div>
           <div class="dia-mes">${mesNome} 2026</div>
         </div>
       </div>
       ${jCards}
     </div>`;
-  }).join("")||(S.calFiltro==="favs"?`<div style="padding:30px;text-align:center;color:var(--t3);font-size:12px">Nenhuma seleção favoritada ainda.<br>Vá em ⭐ Favoritos para marcar.</div>`:"");
+  }).join("")||`<div style="padding:30px;text-align:center;color:var(--t3);font-size:12px">Nenhum jogo neste filtro.</div>`;
 }
 
 // ═══════════════════════════════════════════════════════
 // RENDER MATA-MATA
 // ═══════════════════════════════════════════════════════
-function renderMM(){
-  document.getElementById("mmcont").innerHTML=MM_FASES.map(fase=>{
-    const isFinal=fase.fase.startsWith("Final");
-    const is3l=fase.fase.startsWith("3º");
-    const cards=fase.jogos.map(j=>{
-      const p=S.mmplacares[j.id]||{};
-      const t1v=p.t1!==undefined?p.t1:"",t2v=p.t2!==undefined?p.t2:"";
-      const r=p.t1!==undefined&&p.t2!==undefined&&p.t1!==""&&p.t2!==""
-        ?{t1:parseInt(p.t1),t2:parseInt(p.t2)}:null;
-      const v1=r&&r.t1>r.t2,v2=r&&r.t2>r.t1;
-      const acent=isFinal?"#f5c518":is3l?"#888":"var(--blue)";
-      return`<div class="mm-card">
-        <div class="mm-header">
-          <span>${j.label}</span>
-          <span class="mm-id" style="color:${acent}">${j.info}</span>
-        </div>
-        <div class="mm-body">
-          <div style="text-align:right">
-            <div class="mm-time${v1?" top1 mm-win":""}">${p.nome1||"—"}</div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:4px">
-            <input class="pin" type="number" min="0" max="99" value="${t1v}" placeholder="–"
-              style="${v1?`border-color:${acent}`:""}" oninput="setMMP('${j.id}','t1',this.value)" inputmode="numeric">
-            <span class="vsep">×</span>
-            <input class="pin" type="number" min="0" max="99" value="${t2v}" placeholder="–"
-              style="${v2?`border-color:${acent}`:""}" oninput="setMMP('${j.id}','t2',this.value)" inputmode="numeric">
-          </div>
-          <div style="text-align:left">
-            <div class="mm-time${v2?" top1 mm-win":""}">${p.nome2||"—"}</div>
-          </div>
-        </div>
-        ${isFinal&&r?`<div class="rbadge" style="color:${acent}">🏆 CAMPEÃO: ${v1?p.nome1||"Time 1":p.nome2||"Time 2"}</div>`:""}
-      </div>`;
-    }).join("");
-    return`<div class="fase-title">${fase.fase}</div>${cards}`;
-  }).join("");
-}
 
 // ═══════════════════════════════════════════════════════
 // RENDER TERCEIROS
@@ -723,19 +983,58 @@ function renderFavs(){
 // ═══════════════════════════════════════════════════════
 function setGrupo(g){S.grupo=g;S.rodada=0;renderGrupos();window.scrollTo({top:0,behavior:"smooth"})}
 function setRodada(r){S.rodada=r;renderRbar();renderJogos()}
-function setCalFiltro(f){S.calFiltro=f;renderCal()}
+function renderArtilharia(){
+  const el=document.getElementById("artbody");
+  if(!el)return;
+
+  // Artilharia da API + gols manuais dos jogos
+  const contagem={};
+
+  // Primeiro: dados da API
+  (S.artilharia||[]).forEach(a=>{
+    const k=a.nome;
+    if(!contagem[k])contagem[k]={nome:a.nome,selecao:a.selecao,gols:0};
+    contagem[k].gols=Math.max(contagem[k].gols,a.gols);
+  });
+
+  // Segundo: complementar com gols dos jogos
+  Object.values(S.gols).forEach(lista=>{
+    lista.forEach(g=>{
+      if(!contagem[g.jogador])contagem[g.jogador]={nome:g.jogador,selecao:g.time,gols:0};
+      // só incrementa se não veio da API
+      if(!(S.artilharia||[]).find(a=>a.nome===g.jogador))
+        contagem[g.jogador].gols++;
+    });
+  });
+
+  const lista=Object.values(contagem).filter(a=>a.gols>0).sort((a,b)=>b.gols-a.gols);
+
+  if(!lista.length){
+    el.innerHTML=`<div class="art-empty">Pressione ATUALIZAR para buscar artilheiros</div>`;
+    return;
+  }
+
+  el.innerHTML=lista.map((a,i)=>{
+    const ouro=i===0,prata=i===1,bronze=i===2;
+    const cor=ouro?"#f5c518":prata?"#c0c0c0":bronze?"#cd7f32":"var(--t1)";
+    const medal=ouro?"🥇":prata?"🥈":bronze?"🥉":"";
+    return`<div class="art-row">
+      <span class="art-pos">${medal||i+1}</span>
+      <div>
+        <div class="art-nome">${a.nome}</div>
+        <div class="art-sel">${comBandeira(nomeLimpo(a.selecao))}</div>
+      </div>
+      <span></span>
+      <span class="art-gols" style="color:${cor}">${a.gols}</span>
+    </div>`;
+  }).join("");
+}
 
 function setP(id,time,val){
   const n=parseInt(val);
   if(!S.placares[id])S.placares[id]={};
   S.placares[id][time]=isNaN(n)?"":Math.max(0,Math.min(99,n));
   save();renderJogos();renderClass();renderTerc();renderHeader();
-}
-function setMMP(id,time,val){
-  const n=parseInt(val);
-  if(!S.mmplacares[id])S.mmplacares[id]={};
-  S.mmplacares[id][time]=isNaN(n)?"":Math.max(0,Math.min(99,n));
-  save();renderMM();
 }
 function toggleFav(nome){
   const nl=nomeLimpo(nome);
@@ -754,45 +1053,18 @@ function sv(v,btn){
   if(v==="mm")renderMM();
   if(v==="terc")renderTerc();
   if(v==="favs")renderFavs();
+  if(v==="art")renderArtilharia();
 }
 
-function renderAll(){renderGrupos();renderCal();renderTerc();renderFavs();}
+function setCalFiltro(f){S.calFiltro=f;renderCal();}
+function setCalFiltroHora(h){S.calFiltroHora=h;renderCal();}
+
+function renderAll(){renderGrupos();renderCal();renderTerc();renderFavs();renderArtilharia();}
 
 // ═══════════════════════════════════════════════════════
-// ATUALIZAÇÃO VIA PROXY CLOUDFLARE → API-FOOTBALL
+// ATUALIZAÇÃO VIA CLOUDFLARE WORKER → GEMINI 3.5 FLASH
 // ═══════════════════════════════════════════════════════
 const PROXY = "https://copa2026proxy.maupeccin.workers.dev";
-const WC_LEAGUE = 1;
-const WC_SEASON = 2026;
-
-function normNome(n){
-  return n.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9]/g,"");
-}
-
-const EQUIV={
-  "mexico":"México","south africa":"África do Sul","south korea":"Coreia do Sul",
-  "czech republic":"Tchéquia","czechia":"Tchéquia",
-  "canada":"Canadá","bosnia":"Bósnia","bosnia herzegovina":"Bósnia","qatar":"Catar","switzerland":"Suíça",
-  "brazil":"Brasil","morocco":"Marrocos","haiti":"Haiti","scotland":"Escócia",
-  "united states":"Estados Unidos","usa":"Estados Unidos","paraguay":"Paraguai",
-  "australia":"Austrália","turkey":"Turquia",
-  "germany":"Alemanha","curacao":"Curaçao","ivory coast":"Costa do Marfim",
-  "cote d ivoire":"Costa do Marfim","ecuador":"Equador",
-  "netherlands":"Holanda","japan":"Japão","sweden":"Suécia","tunisia":"Tunísia",
-  "belgium":"Bélgica","egypt":"Egito","iran":"Irã","new zealand":"Nova Zelândia",
-  "spain":"Espanha","cape verde":"Cabo Verde","saudi arabia":"Arábia Saudita","uruguay":"Uruguai",
-  "france":"França","senegal":"Senegal","iraq":"Iraque","norway":"Noruega",
-  "argentina":"Argentina","algeria":"Argélia","austria":"Áustria","jordan":"Jordânia",
-  "portugal":"Portugal","dr congo":"RD Congo","congo dr":"RD Congo","uzbekistan":"Uzbequistão","colombia":"Colômbia",
-  "england":"Inglaterra","croatia":"Croácia","ghana":"Gana","panama":"Panamá",
-};
-
-function apiNomeParaApp(apiNome){
-  const k=apiNome.toLowerCase().replace(/[^a-z ]/g,"").trim();
-  return EQUIV[k]||apiNome;
-}
 
 function setStatus(tipo,msg){
   const b=document.getElementById("sbar");
@@ -801,21 +1073,18 @@ function setStatus(tipo,msg){
   if(tipo==="ok")setTimeout(()=>{b.className="statusbar"},6000);
 }
 
-async function apiFetch(endpoint){
-  const r=await fetch(`${PROXY}?endpoint=${encodeURIComponent(endpoint)}`);
-  if(!r.ok)throw new Error(`Proxy ${r.status}`);
-  return r.json();
-}
-
-// Índice inverso: "brasil|marrocos" → "C1"
-function buildMatchIndex(){
-  const idx={};
-  Object.keys(G).forEach(gid=>G[gid].j.forEach(j=>{
-    const k1=normNome(nomeLimpo(j.t1))+"|"+normNome(nomeLimpo(j.t2));
-    const k2=normNome(nomeLimpo(j.t2))+"|"+normNome(nomeLimpo(j.t1));
-    idx[k1]=j.id; idx[k2]=j.id;
-  }));
-  return idx;
+// Monta lista de jogos de mata-mata já com times conhecidos
+function listaJogosMM(){
+  const lista=[];
+  [...R32,...OF,...QF,...SF,...FIM].forEach(j=>{
+    const p=S.mmplacares[j.id]||{};
+    const t1=p.nome1,t2=p.nome2;
+    if(!t1||!t2||t1.startsWith("Venc.")||t1.startsWith("Perd.")||t1.startsWith("1º")||t1.startsWith("2º")||t1.startsWith("3º"))return;
+    // Só envia se ainda sem placar
+    if(p.t1!==undefined&&p.t1!=="")return;
+    lista.push(`${j.id} | ${j.dt} ${j.h} BRT | ${t1} x ${t2}`);
+  });
+  return lista;
 }
 
 async function fetchUpdate(){
@@ -823,35 +1092,56 @@ async function fetchUpdate(){
   btn.className="btn-upd loading";lbl.textContent="BUSCANDO";
   setStatus("loading","Buscando resultados da Copa 2026...");
 
-  const jogos=[];
+  // Jogos de grupos sem placar ainda
+  const jogosGrupo=[];
   Object.keys(G).forEach(gid=>G[gid].j.forEach(j=>{
-    jogos.push(`${j.id} | ${j.dt} ${j.h} | ${nomeLimpo(j.t1)} x ${nomeLimpo(j.t2)}`);
+    jogosGrupo.push(`${j.id} | ${j.dt} ${j.h} | ${nomeLimpo(j.t1)} x ${nomeLimpo(j.t2)}`);
   }));
 
+  // Jogos de mata-mata com times definidos e sem placar
+  const jogosMM=listaJogosMM();
+
   try{
-    const resp=await fetch("https://copa2026proxy.maupeccin.workers.dev",{
+    const resp=await fetch(PROXY,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({jogos})
+      body:JSON.stringify({jogosGrupo,jogosMM})
     });
     if(!resp.ok)throw new Error(`Worker ${resp.status}`);
     const r=await resp.json();
     if(r.error)throw new Error(r.error);
 
     let count=0;
+
+    // Aplicar placares da fase de grupos
     (r.placares||[]).forEach(p=>{
       const atual=S.placares[p.id];
       if(!atual||atual.t1===""||atual.t1===undefined){
         S.placares[p.id]={t1:p.t1,t2:p.t2};count++;
       }
     });
+
+    // Aplicar placares do mata-mata
+    (r.placaresMM||[]).forEach(p=>{
+      if(!S.mmplacares[p.id])S.mmplacares[p.id]={};
+      const atual=S.mmplacares[p.id];
+      if(atual.t1===undefined||atual.t1===""){
+        S.mmplacares[p.id].t1=p.t1;
+        S.mmplacares[p.id].t2=p.t2;
+        count++;
+      }
+    });
+
+    // Artilharia
     if(r.artilharia&&r.artilharia.length)S.artilharia=r.artilharia;
+
+    // Gols por jogo
     (r.gols_por_jogo||[]).forEach(j=>{
       if(j.gols&&j.gols.length)S.gols[j.id]=j.gols;
     });
 
     const agora=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    S.upd=agora;save();renderAll();
+    S.upd=agora;save();renderAll();renderMM();
     btn.className="btn-upd ok";lbl.textContent="OK ✓";
     setStatus("ok",`${count} resultado(s) atualizado(s) · ${agora}`);
     setTimeout(()=>{btn.className="btn-upd";lbl.textContent="ATUALIZAR"},3000);
