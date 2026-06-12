@@ -759,26 +759,22 @@ function sv(v,btn){
 function renderAll(){renderGrupos();renderCal();renderTerc();renderFavs();}
 
 // ═══════════════════════════════════════════════════════
-// ATUALIZAÇÃO VIA API-FOOTBALL
+// ATUALIZAÇÃO VIA PROXY CLOUDFLARE → API-FOOTBALL
 // ═══════════════════════════════════════════════════════
-const API_KEY = "53ca874e31be823d17611d476d6651bf";
-const API_BASE = "https://v3.football.api-sports.io";
+const PROXY = "https://copa2026proxy.maupeccin.workers.dev";
 const WC_LEAGUE = 1;
 const WC_SEASON = 2026;
 
-// Mapa de nomes API-Football → IDs internos do app
-// A API retorna nomes em inglês; fazemos o cruzamento pelo confronto
 function normNome(n){
   return n.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9]/g,"");
 }
 
-// Tabela de equivalência inglês → nome limpo do app
 const EQUIV={
   "mexico":"México","south africa":"África do Sul","south korea":"Coreia do Sul",
   "czech republic":"Tchéquia","czechia":"Tchéquia",
-  "canada":"Canadá","bosnia":"Bósnia","qatar":"Catar","switzerland":"Suíça",
+  "canada":"Canadá","bosnia":"Bósnia","bosnia herzegovina":"Bósnia","qatar":"Catar","switzerland":"Suíça",
   "brazil":"Brasil","morocco":"Marrocos","haiti":"Haiti","scotland":"Escócia",
   "united states":"Estados Unidos","usa":"Estados Unidos","paraguay":"Paraguai",
   "australia":"Austrália","turkey":"Turquia",
@@ -791,7 +787,6 @@ const EQUIV={
   "argentina":"Argentina","algeria":"Argélia","austria":"Áustria","jordan":"Jordânia",
   "portugal":"Portugal","dr congo":"RD Congo","congo dr":"RD Congo","uzbekistan":"Uzbequistão","colombia":"Colômbia",
   "england":"Inglaterra","croatia":"Croácia","ghana":"Gana","panama":"Panamá",
-  "guadalajara":"Guadalajara","monterrey":"Monterrey"
 };
 
 function apiNomeParaApp(apiNome){
@@ -807,10 +802,8 @@ function setStatus(tipo,msg){
 }
 
 async function apiFetch(endpoint){
-  const r=await fetch(`${API_BASE}${endpoint}`,{
-    headers:{"x-apisports-key":API_KEY}
-  });
-  if(!r.ok)throw new Error(`API ${r.status}`);
+  const r=await fetch(`${PROXY}?endpoint=${encodeURIComponent(endpoint)}`);
+  if(!r.ok)throw new Error(`Proxy ${r.status}`);
   return r.json();
 }
 
