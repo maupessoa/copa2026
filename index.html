@@ -820,68 +820,46 @@ function buildMatchIndex(){
 
 async function fetchUpdate(){
   const btn=document.getElementById("btnupd"),lbl=document.getElementById("updlbl");
-  btn.className="btn-upd loading"; lbl.textContent="BUSCANDO";
-  setStatus("loading","Conectando à API de resultados...");
+  btn.className="btn-upd loading";lbl.textContent="BUSCANDO";
+  setStatus("loading","Buscando resultados da Copa 2026...");
+
+  const jogos=[];
+  Object.keys(G).forEach(gid=>G[gid].j.forEach(j=>{
+    jogos.push(`${j.id} | ${j.dt} ${j.h} | ${nomeLimpo(j.t1)} x ${nomeLimpo(j.t2)}`);
+  }));
 
   try{
-    // ── 1. Fixtures (placares) ──────────────────────────
-    setStatus("loading","Buscando placares da fase de grupos...");
-    const fixData = await apiFetch(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}&stage=Group+Stage`);
-    const idx = buildMatchIndex();
+    const resp=await fetch("https://copa2026proxy.maupeccin.workers.dev",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({jogos})
+    });
+    if(!resp.ok)throw new Error(`Worker ${resp.status}`);
+    const r=await resp.json();
+    if(r.error)throw new Error(r.error);
+
     let count=0;
-
-    if(fixData.response && fixData.response.length>0){
-      fixData.response.forEach(f=>{
-        const status=f.fixture.status.short;
-        if(!["FT","AET","PEN"].includes(status))return; // só encerrados
-        const t1api=apiNomeParaApp(f.teams.home.name);
-        const t2api=apiNomeParaApp(f.teams.away.name);
-        const k=normNome(t1api)+"|"+normNome(t2api);
-        const jid=idx[k];
-        if(!jid)return;
-        const p=S.placares[jid];
-        // Só preenche se ainda não tem placar manual
-        if(!p||p.t1===""||p.t1===undefined){
-          S.placares[jid]={t1:f.goals.home,t2:f.goals.away};
-          count++;
-        }
-        // Gols por jogador (eventos)
-        if(f.events&&f.events.length){
-          const gols=f.events
-            .filter(e=>e.type==="Goal"&&e.detail!=="Missed Penalty")
-            .map(e=>({
-              jogador:e.player.name,
-              time:apiNomeParaApp(e.team.name),
-              min:String(e.time.elapsed)
-            }));
-          if(gols.length&&!S.gols[jid])S.gols[jid]=gols;
-        }
-      });
-    }
-
-    // ── 2. Artilharia ───────────────────────────────────
-    setStatus("loading","Buscando artilheiros...");
-    try{
-      const artData=await apiFetch(`/players/topscorers?league=${WC_LEAGUE}&season=${WC_SEASON}`);
-      if(artData.response&&artData.response.length){
-        S.artilharia=artData.response.slice(0,30).map(p=>({
-          nome:p.player.name,
-          selecao:apiNomeParaApp(p.statistics[0].team.name),
-          gols:p.statistics[0].goals.total||0
-        }));
+    (r.placares||[]).forEach(p=>{
+      const atual=S.placares[p.id];
+      if(!atual||atual.t1===""||atual.t1===undefined){
+        S.placares[p.id]={t1:p.t1,t2:p.t2};count++;
       }
-    }catch(e){/* artilharia opcional */}
+    });
+    if(r.artilharia&&r.artilharia.length)S.artilharia=r.artilharia;
+    (r.gols_por_jogo||[]).forEach(j=>{
+      if(j.gols&&j.gols.length)S.gols[j.id]=j.gols;
+    });
 
     const agora=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    S.upd=agora; save(); renderAll();
-    btn.className="btn-upd ok"; lbl.textContent="OK ✓";
+    S.upd=agora;save();renderAll();
+    btn.className="btn-upd ok";lbl.textContent="OK ✓";
     setStatus("ok",`${count} resultado(s) atualizado(s) · ${agora}`);
     setTimeout(()=>{btn.className="btn-upd";lbl.textContent="ATUALIZAR"},3000);
 
   }catch(e){
     console.error(e);
-    btn.className="btn-upd err"; lbl.textContent="ERRO";
-    setStatus("err","Falha na API. Verifique sua conexão e tente novamente.");
+    btn.className="btn-upd err";lbl.textContent="ERRO";
+    setStatus("err","Falha ao buscar. Tente novamente em instantes.");
     setTimeout(()=>{btn.className="btn-upd";lbl.textContent="ATUALIZAR"},3000);
   }
 }
