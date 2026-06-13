@@ -1,2 +1,2 @@
-# copa2026
-Simple project for app.
+
+Em manutenção
